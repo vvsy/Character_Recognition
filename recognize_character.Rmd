@@ -1,0 +1,44 @@
+---
+title: "recognize_character"
+author: "Vvsy"
+date: "10/15/2019"
+output: html_document
+---
+
+```{r Environment setup, warning=FALSE}
+library(reticulate)
+use_python("/usr/local/bin/python3",
+           required = T)
+use_condaenv("m-team")
+```
+
+```{python import}
+import os, shutil
+```
+
+```{python mkdir}
+dataset = '/Users/wongshnyau/Downloads/dataset'
+operation = '/Users/wongshnyau/Downloads/operation'
+
+os.mkdir(operation)
+```
+
+```{python training validation and test}
+#Directories for the training, validation, and test splits
+train_dir = os.path.join(operation, 'train')
+os.mkdir(train_dir)
+validation_dir = os.path.join(operation, 'validation')
+os.mkdir(validation_dir)
+test_dir = os.path.join(operation, 'test')
+os.mkdir(test_dir)
+```
+
+```{python}
+for i in range(1,8):
+  os.mkdir(os.path.join(train_dir, 'train_%s'%(str(i))))
+  os.mkdir(os.path.join(validation_dir, 'validation_%s'%(str(i))))
+  os.mkdir(os.path.join(test_dir, 'test_%s'%(str(i))))
+```
+
+
+
