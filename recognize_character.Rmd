@@ -13,7 +13,7 @@ use_condaenv("m-team")
 ```
 
 ```{python import}
-import os, shutil
+import os, shutil, random
 ```
 
 ```{python mkdir}
@@ -35,10 +35,40 @@ os.mkdir(test_dir)
 
 ```{python}
 for i in range(1,8):
-  os.mkdir(os.path.join(train_dir, 'train_%s'%(str(i))))
-  os.mkdir(os.path.join(validation_dir, 'validation_%s'%(str(i))))
-  os.mkdir(os.path.join(test_dir, 'test_%s'%(str(i))))
+  train_dirr = os.path.join(train_dir, 'train_%s'%(str(i)))
+  os.mkdir(train_dirr)
+  validation_dirr = os.path.join(validation_dir, 'validation_%s'%(str(i)))
+  os.mkdir(validation_dirr)
+  test_dirr = os.path.join(test_dir, 'test_%s'%(str(i)))
+  os.mkdir(test_dirr)
+
+  
+  original_dir = os.listdir(os.path.join(dataset, str(i)))
+  sample = random.sample(original_dir, len(original_dir)//2)
+  sample2 = list(set(original_dir)-set(sample))
+  sample3 = random.sample(sample2, len(sample2)//2)
+  sample4 = list(set(sample2)-set(sample3))
+
+  
+  for pic_name in sample:
+    A = os.path.join(dataset, str(i),pic_name)
+    B = os.path.join(train_dirr, pic_name)
+    shutil.copyfile(A, B)
+
+  
+
+  
+  for pic_name in sample3:
+    A = os.path.join(dataset, str(i),pic_name)
+    B = os.path.join(validation_dirr, pic_name)
+    shutil.copyfile(A, B)
+
+
+  
+  for pic_name in sample4:
+    A = os.path.join(dataset, str(i),pic_name)
+    B = os.path.join(test_dirr, pic_name)
+    shutil.copyfile(A, B)
+
 ```
-
-
 
