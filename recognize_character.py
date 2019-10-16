@@ -1,0 +1,123 @@
+import os
+import shutil
+import random
+import keras
+from keras import layers
+from keras import models
+from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+from keras.preprocessing.image import ImageDataGenerator  # quickly set up Python generators that can automatically turn image files on disk into batches of preprocessed tensors.
+import matplotlib.pyplot as plt
+
+dataset = '/Users/wongshnyau/Downloads/dataset'
+operation = '/Users/wongshnyau/Downloads/operation'
+
+# os.mkdir(operation)
+
+
+# split the train, validation, and test dataset
+train_dir = os.path.join(operation, 'train')
+# os.mkdir(train_dir)
+validation_dir = os.path.join(operation, 'validation')
+# os.mkdir(validation_dir)
+test_dir = os.path.join(operation, 'test')
+# os.mkdir(test_dir)
+
+
+for i in range(1, 8):
+  train_dirr = os.path.join(train_dir, 'train_%s' % (str(i)))
+  os.mkdir(train_dirr)
+  validation_dirr = os.path.join(validation_dir, 'validation_%s' % (str(i)))
+  os.mkdir(validation_dirr)
+  test_dirr = os.path.join(test_dir, 'test_%s' % (str(i)))
+  os.mkdir(test_dirr)
+
+  original_dir = os.listdir(os.path.join(dataset, str(i)))
+  sample = random.sample(original_dir, len(original_dir) // 2)
+  sample2 = list(set(original_dir) - set(sample))
+  sample3 = random.sample(sample2, len(sample2) // 2)
+  sample4 = list(set(sample2) - set(sample3))
+
+  for pic_name in sample:
+    A = os.path.join(dataset, str(i), pic_name)
+    B = os.path.join(train_dirr, pic_name)
+    shutil.copyfile(A, B)
+
+  for pic_name in sample3:
+    A = os.path.join(dataset, str(i), pic_name)
+    B = os.path.join(validation_dirr, pic_name)
+    shutil.copyfile(A, B)
+
+  for pic_name in sample4:
+    A = os.path.join(dataset, str(i), pic_name)
+    B = os.path.join(test_dirr, pic_name)
+    shutil.copyfile(A, B)
+
+
+model = models.Sequential()
+model.add(layers.Conv2D(16, (3, 3), activation='relu',
+                        input_shape=(28, 28, 3)))
+
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(32, (3, 3), activation='relu'))
+model.add(layers.MaxPooling2D((2, 2)))
+# model.add(Dropout(0.25))
+model.add(layers.Flatten())
+model.add(layers.Dense(128, activation='relu'))
+# model.add(Dropout(0.25))
+model.add(layers.Dense(7, activation='softmax'))
+
+
+model.summary()
+
+
+# 定義訓練方式
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+
+# Rescales all images by 1/255
+
+train_datagen = ImageDataGenerator(rescale=1. / 255)
+test_datagen = ImageDataGenerator(rescale=1. / 255)
+
+
+train_generator = train_datagen.flow_from_directory(
+    train_dir,  # Target directory
+    target_size=(28, 28),  # Resizes all images to 150 × 150
+    batch_size=10,
+    class_mode='categorical')  # Because you use binary_crossentropy loss, you need binary labels
+
+validation_generator = test_datagen.flow_from_directory(
+    validation_dir,
+    target_size=(28, 28),
+    batch_size=10,
+    class_mode='categorical')
+
+
+# 使用批量生成器擬合模型
+history = model.fit_generator(
+    train_generator,
+    steps_per_epoch=100,  # numbers of batch = 100, batch size = 20, 100*20 = 2000 = train size
+    epochs=12,
+    validation_data=validation_generator,
+    validation_steps=50)  # numbers of batch = 50, batch size = 20, 100*20 = 1000 = validation size
+
+
+# save model
+model.save('recognize_cha')
+
+
+acc = history.history['acc']
+val_acc = history.history['val_acc']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(1, len(acc) + 1)
+plt.plot(epochs, acc, 'bo', label='Training acc')
+plt.plot(epochs, val_acc, 'b', label='Validation acc')
+plt.title('Training and validation accuracy')
+plt.legend()
+plt.figure()
+plt.plot(epochs, loss, 'bo', label='Training loss')
+plt.plot(epochs, val_loss, 'b', label='Validation loss')
+plt.title('Training and validation loss')
+plt.legend()
+plt.show()
