@@ -76,18 +76,17 @@ for i in range(1,8):
 import keras
 from keras import layers
 from keras import models
-#from keras.layers import Dense,Dropout,Flatten,Conv2D,MaxPooling2D 
+from keras.layers import Dropout
 model = models.Sequential()
 model.add(layers.Conv2D(16, (3, 3), activation='relu',
-                        input_shape=(28, 28, 3)))
+                        input_shape=(30, 30, 3)))
                         
 model.add(layers.MaxPooling2D((2, 2)))
 model.add(layers.Conv2D(32, (3, 3), activation='relu'))
 model.add(layers.MaxPooling2D((2, 2)))
-#model.add(Dropout(0.25)) 
+model.add(Dropout(0.25)) 
 model.add(layers.Flatten())
 model.add(layers.Dense(128, activation='relu'))
-#model.add(Dropout(0.25)) 
 model.add(layers.Dense(7, activation='softmax'))
 ```
 
@@ -113,13 +112,13 @@ test_datagen = ImageDataGenerator(rescale=1./255)
 
 train_generator = train_datagen.flow_from_directory(
                   train_dir,              #Target directory
-                  target_size=(28, 28), #Resizes all images to 150 × 150
+                  target_size=(30, 30), #Resizes all images to 150 × 150
                   batch_size=10,
                   class_mode='categorical')    #Because you use binary_crossentropy loss, you need binary labels
 
 validation_generator = test_datagen.flow_from_directory(
                   validation_dir,
-                  target_size=(28, 28),
+                  target_size=(30, 30),
                   batch_size=10,
                   class_mode='categorical')
 
@@ -138,9 +137,7 @@ history = model.fit_generator(
 # save model
 model.save('recognize_cha')
 ```
-```{python}
 
-```
 
 
 
@@ -165,10 +162,26 @@ plt.show()
 ```
 
 
+```{python}
+test_generator = test_datagen.flow_from_directory(
+                  test_dir,
+                  target_size=(30, 30),
+                  batch_size=1,
+                  class_mode='categorical')
+
+#predict = model.predict_generator(test_generator,steps =  len(test_generator.filenames))
+
+
+```
+
+
 
 ```{python}
-scores = model.evaluate(test_dir,test_dir)  
-print()  
-print("\t[Info] Accuracy of testing data = {:2.1f}%".format(scores[1]*100.0)) 
+loss,acc=model.evaluate_generator(test_generator, steps=len(test_generator.filenames))
+```
+
+```{python}
+loss
+acc
 ```
 
